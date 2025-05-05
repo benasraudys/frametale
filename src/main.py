@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 import logging
 import os
-from ui.menu import display_main_menu
+from ui.menu import MainMenuGUI
 from game.engine import GameEngine
 from ui.game_screen import run_game_loop
 from core import config
@@ -25,58 +27,48 @@ logging.basicConfig(
 #    console_handler.setLevel(logging.INFO) # Only show INFO and above on console
 
 logger = logging.getLogger(__name__)
+logger.info("Initialized logger.")
 
 
 def main():
     """Main function to run the game menu and handle choices."""
     engine = GameEngine()
-    os.system("clear")
     try:
-        while True:
-            choice = display_main_menu()
+        menu = MainMenuGUI()
+        choice = menu.get_choice()
 
-            if choice == "1":
-                logger.info("Starting new game...")
-                os.system("clear")
-                print("\n🧭 Loading...")
-                engine.start_new_game()
-                if engine.save_game():
-                    logger.debug("Saved game state after initial narrative.")
-                else:
-                    logger.warning("Failed to save initial game state.")
-
-                if engine.game_state.is_initialized():
-                    run_game_loop(engine)
-                else:
-                    logger.error("Engine state not initialized after start_new_game.")
-                    os.system("clear")
-                    print(
-                        "[red]Failed to initialize new game state. Returning to menu.[/red]"
-                    )
-
-            elif choice == "2":
-                logger.info("Attempting to continue game...")
-                if engine.load_game():
-                    os.system("clear")
-                    logger.info("Loaded game state successfully.")
-                    run_game_loop(engine)
-                else:
-                    logger.warning(
-                        "Could not load game. No save file found or file is invalid."
-                    )
-                    os.system("clear")
-                    print("\n[yellow]No game save available.[/yellow]")
-
-            elif choice == "3":
-                os.system("clear")
-                print("Exiting game. Goodbye!")
-                break
+        if choice == "1":
+            logger.info("Starting new game...")
+            print("\n🧭 Loading...")
+            engine.start_new_game()
+            if engine.save_game():
+                logger.debug("Saved game state after initial narrative.")
             else:
-                print("Invalid choice. Please try again.")
+                logger.warning("Failed to save initial game state.")
+
+            if engine.game_state.is_initialized():
+                run_game_loop(engine)
+            else:
+                logger.error("Engine state not initialized after start_new_game.")
+                print("Failed to initialize new game state. Returning to menu.")
+
+        elif choice == "2":
+            logger.info("Attempting to continue game...")
+            if engine.load_game():
+                logger.info("Loaded game state successfully.")
+                run_game_loop(engine)
+            else:
+                logger.warning(
+                    "Could not load game. No save file found or file is invalid."
+                )
+                print("\nNo game save available.")
+
+        elif choice == "3":
+            print("Exiting game. Goodbye!")
+            # No break needed as there's no loop
 
     except KeyboardInterrupt:
         logger.info("Game interrupted by user (Ctrl+C). Exiting gracefully.")
-        os.system("clear")
         print("\nExiting game. Goodbye!")
 
 

@@ -80,13 +80,13 @@ REMINDER_MESSAGE = (
     "When user rests - use change_player_stamina. "
     "When user is hurt - use change_player_hp. "
     "Use these tools often, but only if it fits the context!!! "
-    "Don't tell the user anything about his stats at all costs!!! "
     "Just focus on telling the story for the user while using tools under the hood. "
-    "Also use ANSI escape codes to color code dialogue, for example: \n"
-    "John introduced, - \033[91mHello, my name is John.\033[0m "
-    "Alce said - \033[92mHi John, nice to meet you, I'm Alice.\033[0m "
-    "Jacob remarked, - \033[93mHi John, long time no see!\033[0m "
-    "Then Michael raised his eyebrow, - \033[94mYou guys already know each other?\033[0m"
+    "Your responses must be no more than 5 sentences."
+    # "Also use ANSI escape codes to color code dialogue, for example: \n"
+    # "John introduced, - \033[91mHello, my name is John.\033[0m "
+    # "Alce said - \033[92mHi John, nice to meet you, I'm Alice.\033[0m "
+    # "Jacob remarked, - \033[93mHi John, long time no see!\033[0m "
+    # "Then Michael raised his eyebrow, - \033[94mYou guys already know each other?\033[0m"
 )
 
 if not OPENROUTER_API_KEY:

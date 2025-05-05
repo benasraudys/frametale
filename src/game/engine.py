@@ -134,11 +134,23 @@ class GameEngine:
                 return f"[italic dim]Tool '{last_msg.get('name', 'unknown')}' executed.[/italic dim]"
         return None
 
-    def get_player_status(self) -> str:
-        """Returns a string describing the player's current status."""
+    def get_player_status(self) -> Dict:
+        """Returns a dictionary describing the player's current status."""
         if not self.game_state.player:
-            return "Player: N/A"
-        inv_str = (
-            ", ".join(item.name for item in self.game_state.player.inventory) or "Empty"
-        )
-        return f"Player: {self.game_state.player.name} ║ HP: {self.game_state.player.hp} ║ Stamina: {self.game_state.player.stamina} ║ Money: {self.game_state.player.money_oz:.2f} oz ║ Inventory: {inv_str}"
+            return {
+                "name": "N/A",
+                "health": "-",
+                "stamina": "-",
+                "money": "-",
+                "inventory": [],
+            }
+
+        inventory_names = [item.name for item in self.game_state.player.inventory]
+
+        return {
+            "name": self.game_state.player.name,
+            "health": self.game_state.player.hp,
+            "stamina": self.game_state.player.stamina,
+            "money": f"{self.game_state.player.money_oz:.2f} oz",
+            "inventory": inventory_names,
+        }
