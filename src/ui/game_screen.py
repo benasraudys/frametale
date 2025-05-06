@@ -19,15 +19,14 @@ class GameScreen(ctk.CTk):
         # --- Configuration ---
         ctk.DrawEngine.preferred_drawing_method = "circle_shapes"
         ctk.set_appearance_mode("Dark")
+        ctk.set_default_color_theme("../themes/dark-blue.json")  # Load custom theme
         self.title("FrameTale")
         self.geometry("1200x1000")  # Adjust size as needed
 
-        # Consistent border thickness
-        self.border_thickness = 3
-        self.panel_corner_radius = 8
-        self.widget_corner_radius = 8
-        self.font_size_normal = 16
+        # font_size_large is kept for specific overrides like the header
         self.font_size_large = 24
+        # Other styling attributes (border_thickness, panel_corner_radius, widget_corner_radius, font_size_normal)
+        # are now sourced from themes/custom-style.json
 
         # --- Grid Layout ---
         self.grid_columnconfigure(0, weight=1)
@@ -67,9 +66,7 @@ class GameScreen(ctk.CTk):
         """Creates the header panel and label."""
         header_panel = ctk.CTkFrame(
             self,
-            corner_radius=self.panel_corner_radius,
             height=80,
-            border_width=self.border_thickness,
         )
         header_panel.grid(
             row=0, column=0, padx=30, pady=(30, 10), sticky="ew"
@@ -87,8 +84,6 @@ class GameScreen(ctk.CTk):
         """Creates the container for player status indicators."""
         self.status_container = ctk.CTkFrame(
             self,
-            corner_radius=self.panel_corner_radius,
-            border_width=self.border_thickness,
         )
         self.status_container.grid(
             row=1, column=0, padx=30, pady=(10, 10), sticky="ew"
@@ -106,7 +101,6 @@ class GameScreen(ctk.CTk):
         # You could make these CTkFrames if you want borders around each stat
         self.status_labels = {}  # Dictionary to hold status labels
 
-        common_font = ctk.CTkFont(size=self.font_size_normal)
         label_pady = 10
         label_padx = 15
 
@@ -114,8 +108,6 @@ class GameScreen(ctk.CTk):
         # Player Name (aligned left)
         name_frame = ctk.CTkFrame(
             self.status_container,
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
         )
         name_frame.grid(
             row=0,
@@ -127,7 +119,7 @@ class GameScreen(ctk.CTk):
         name_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
 
         self.status_labels["name"] = ctk.CTkLabel(
-            name_frame, text="Name: -", font=common_font, anchor="w"
+            name_frame, text="Name: -", anchor="w"  # Font from theme
         )
         self.status_labels["name"].grid(
             row=0,
@@ -141,8 +133,6 @@ class GameScreen(ctk.CTk):
         # Health (aligned right)
         health_frame = ctk.CTkFrame(
             self.status_container,
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
         )
         health_frame.grid(
             row=0, column=1, padx=label_padx, pady=label_pady, sticky="nsew"
@@ -150,7 +140,7 @@ class GameScreen(ctk.CTk):
         health_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
 
         self.status_labels["health"] = ctk.CTkLabel(
-            health_frame, text="HP: -", font=common_font, anchor="e"
+            health_frame, text="HP: -", anchor="e"  # Font from theme
         )
         self.status_labels["health"].grid(
             row=0,
@@ -164,8 +154,6 @@ class GameScreen(ctk.CTk):
         # Stamina (aligned right)
         stamina_frame = ctk.CTkFrame(
             self.status_container,
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
         )
         stamina_frame.grid(
             row=0,
@@ -177,7 +165,7 @@ class GameScreen(ctk.CTk):
         stamina_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
 
         self.status_labels["stamina"] = ctk.CTkLabel(
-            stamina_frame, text="Stamina: -", font=common_font, anchor="e"
+            stamina_frame, text="Stamina: -", anchor="e"  # Font from theme
         )
         self.status_labels["stamina"].grid(
             row=0,
@@ -191,8 +179,6 @@ class GameScreen(ctk.CTk):
         # Money (aligned right)
         money_frame = ctk.CTkFrame(
             self.status_container,
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
         )
         money_frame.grid(
             row=0,
@@ -204,7 +190,7 @@ class GameScreen(ctk.CTk):
         money_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
 
         self.status_labels["money"] = ctk.CTkLabel(
-            money_frame, text="Money: -", font=common_font, anchor="e"
+            money_frame, text="Money: -", anchor="e"  # Font from theme
         )
         self.status_labels["money"].grid(
             row=0,
@@ -218,8 +204,6 @@ class GameScreen(ctk.CTk):
         """Creates the main panel for displaying the story narrative."""
         narrative_panel = ctk.CTkFrame(
             self,
-            corner_radius=self.panel_corner_radius,
-            border_width=self.border_thickness,
         )
         narrative_panel.grid(
             row=2, column=0, padx=30, pady=10, sticky="nsew"
@@ -230,9 +214,7 @@ class GameScreen(ctk.CTk):
         self.narrative_textbox = ctk.CTkTextbox(
             narrative_panel,
             wrap="word",
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
-            font=ctk.CTkFont(size=self.font_size_normal),
+            # corner_radius, border_width, and font from theme
             state="disabled",  # Start disabled
         )
         self.narrative_textbox.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
@@ -241,8 +223,6 @@ class GameScreen(ctk.CTk):
         """Creates the panel for player action input."""
         input_panel = ctk.CTkFrame(
             self,
-            corner_radius=self.panel_corner_radius,
-            border_width=self.border_thickness,
         )
         input_panel.grid(
             row=3, column=0, padx=30, pady=10, sticky="ew"
@@ -254,7 +234,7 @@ class GameScreen(ctk.CTk):
         input_panel.grid_columnconfigure(2, weight=0)  # Send button
 
         button_height = 50
-        button_font = ctk.CTkFont(size=self.font_size_normal)
+        # button_font removed, will use theme default
 
         # Special Button (New)
         special_button = ctk.CTkButton(
@@ -263,9 +243,7 @@ class GameScreen(ctk.CTk):
             command=self.handle_special_action,  # Add a handler function
             height=button_height,
             width=100,  # Fixed width for special button
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
-            font=button_font,
+            # corner_radius, border_width, and font from theme
             # Optional: different color for special button
             # fg_color=("#DBAE58", "#C19A6B"),
             # hover_color=("#C19A6B", "#A47E54"),
@@ -277,9 +255,7 @@ class GameScreen(ctk.CTk):
             input_panel,
             placeholder_text="Enter your action...",
             height=button_height,
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
-            font=ctk.CTkFont(size=self.font_size_normal),
+            # corner_radius, border_width, and font from theme
         )
         self.action_entry.grid(
             row=0, column=1, sticky="ew", padx=0, pady=20
@@ -293,9 +269,7 @@ class GameScreen(ctk.CTk):
             command=self.process_action_event,  # Trigger same logic as Enter
             height=button_height,
             width=100,  # Fixed width for send button
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
-            font=button_font,
+            # corner_radius, border_width, and font from theme
         )
         send_button.grid(row=0, column=2, sticky="e", padx=(10, 20), pady=20)
 
@@ -303,8 +277,7 @@ class GameScreen(ctk.CTk):
         """Creates the bottom panel, now only containing the Quit button."""
         bottom_panel = ctk.CTkFrame(
             self,
-            corner_radius=self.panel_corner_radius,
-            border_width=self.border_thickness,
+            # corner_radius and border_width from theme
             fg_color="transparent",  # Make panel transparent if only holding one button
         )
         # Align the panel itself to the bottom-right
@@ -318,9 +291,8 @@ class GameScreen(ctk.CTk):
             command=self.quit_game,
             height=40,  # Smaller height
             width=80,  # Smaller width
-            corner_radius=self.widget_corner_radius,
-            border_width=self.border_thickness,
-            font=ctk.CTkFont(size=self.font_size_normal - 2),  # Slightly smaller font
+            # corner_radius and border_width from theme
+            font=ctk.CTkFont(size=14),  # Slightly smaller font (16-2=14)
             fg_color=("#E74C3C", "#C0392B"),  # Keep danger colors
             hover_color=("#C0392B", "#A93226"),
         )
