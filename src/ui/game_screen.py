@@ -1,110 +1,17 @@
 import logging
-import time
-import random
-import threading
-import queue
 import customtkinter as ctk
 
-# from game.engine import GameEngine # Assuming this is your actual engine import
+from game.engine import GameEngine
+
+from .narrative_typer import NarrativeTyper
 
 logger = logging.getLogger(__name__)
-
-
-class NarrativeTyper:
-    """Handles the threaded typing effect for the narrative textbox."""
-
-    def __init__(self, textbox: ctk.CTkTextbox, app: ctk.CTk):
-        self.textbox = textbox
-        self.app = app
-        self._stop_event = threading.Event()
-        self._thread = None
-
-    def type_out(self, text: str):
-        """Starts the typing effect in a separate thread."""
-        # Stop any existing typing thread
-        self.stop()
-
-        # Clear the stop event for the new thread
-        self._stop_event.clear()
-
-        # Disable textbox during typing, clear it
-        self.textbox.configure(state="normal")
-        self.textbox.delete("0.0", "end")
-        self.textbox.configure(state="disabled")
-
-        # Start the new typing thread
-        self._thread = threading.Thread(
-            target=self._type_worker, args=(text,), daemon=True
-        )
-        self._thread.start()
-
-    def _type_worker(self, text: str):
-        """The worker function that performs typing simulation."""
-        try:
-            # Re-enable textbox safely using app.after
-            self.app.after(0, lambda: self.textbox.configure(state="normal"))
-
-            for char in text:
-                # Check if stop was requested
-                if self._stop_event.is_set():
-                    logger.info("Typing thread stopped.")
-                    break
-
-                # Schedule character insertion on the main thread
-                self.app.after(0, lambda c=char: self._insert_char(c))
-
-                # Calculate delay
-                if char == "\n":
-                    delay = 0.5  # Slightly faster newline
-                elif char in [".", "!", "?"]:
-                    delay = 0.3  # Faster punctuation
-                elif char == ",":
-                    delay = 0.1
-                elif char == " ":
-                    delay = 0.01
-                else:
-                    # Variable delay for other characters
-                    delay = random.uniform(0.01, 0.05)
-
-                time.sleep(delay)
-
-            # Ensure the final state is disabled, scheduled after the last char
-            self.app.after(10, self._finalize_typing)
-
-        except Exception as e:
-            logger.exception(f"Error in typing thread: {e}")
-            # Ensure textbox is disabled even if error occurs
-            self.app.after(0, lambda: self.textbox.configure(state="disabled"))
-
-    def _insert_char(self, char: str):
-        """Inserts a character and scrolls (runs on main thread via app.after)."""
-        if self.textbox.winfo_exists():  # Check if widget still exists
-            self.textbox.insert("end", char)
-            self.textbox.see("end")
-
-    def _finalize_typing(self):
-        """Finalizes typing state (runs on main thread via app.after)."""
-        if self.textbox.winfo_exists():
-            # Only disable if no stop was requested during the final delay
-            if not self._stop_event.is_set():
-                self.textbox.configure(state="disabled")
-            logger.info("Typing finished.")
-
-    def stop(self):
-        """Signals the typing thread to stop."""
-        if self._thread and self._thread.is_alive():
-            self._stop_event.set()
-            # Optionally wait for the thread to finish
-            # self._thread.join(timeout=0.1)
-            logger.info("Stop signal sent to typing thread.")
-        # Re-enable textbox immediately upon stopping if it was disabled
-        # self.app.after(0, lambda: self.textbox.configure(state="normal"))
 
 
 class GameScreen(ctk.CTk):
     """Main application window for the FrameTale game."""
 
-    def __init__(self, engine):  # Use GameEngine
+    def __init__(self, engine: GameEngine):
         super().__init__()
 
         self.engine = engine
@@ -204,47 +111,107 @@ class GameScreen(ctk.CTk):
         label_padx = 15
 
         # Player Name (aligned left)
-        self.status_labels["name"] = ctk.CTkLabel(
-            self.status_container, text="Name: -", font=common_font, anchor="w"
+        # Player Name (aligned left)
+        name_frame = ctk.CTkFrame(
+            self.status_container,
+            corner_radius=self.widget_corner_radius,
+            border_width=self.border_thickness,
         )
-        self.status_labels["name"].grid(
+        name_frame.grid(
             row=0,
             column=0,
             padx=(label_padx * 2, label_padx),
             pady=label_pady,
-            sticky="ew",
+            sticky="nsew",  # Make frame fill available space
+        )
+        name_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
+
+        self.status_labels["name"] = ctk.CTkLabel(
+            name_frame, text="Name: -", font=common_font, anchor="w"
+        )
+        self.status_labels["name"].grid(
+            row=0,
+            column=0,
+            padx=label_padx,  # Add internal padding
+            pady=label_pady,  # Add internal padding
+            sticky="nsew",  # Make label fill available space within frame
         )
 
         # Health (aligned right)
+        # Health (aligned right)
+        health_frame = ctk.CTkFrame(
+            self.status_container,
+            corner_radius=self.widget_corner_radius,
+            border_width=self.border_thickness,
+        )
+        health_frame.grid(
+            row=0, column=1, padx=label_padx, pady=label_pady, sticky="nsew"
+        )  # Make frame fill available space
+        health_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
+
         self.status_labels["health"] = ctk.CTkLabel(
-            self.status_container, text="HP: -", font=common_font, anchor="e"
+            health_frame, text="HP: -", font=common_font, anchor="e"
         )
         self.status_labels["health"].grid(
-            row=0, column=1, padx=label_padx, pady=label_pady, sticky="e"
+            row=0,
+            column=0,
+            padx=label_padx,
+            pady=label_pady,
+            sticky="nsew",  # Make label fill available space within frame
         )
 
         # Stamina (aligned right)
-        self.status_labels["stamina"] = ctk.CTkLabel(
-            self.status_container, text="Stamina: -", font=common_font, anchor="e"
+        # Stamina (aligned right)
+        stamina_frame = ctk.CTkFrame(
+            self.status_container,
+            corner_radius=self.widget_corner_radius,
+            border_width=self.border_thickness,
         )
-        self.status_labels["stamina"].grid(
+        stamina_frame.grid(
             row=0,
             column=2,
             padx=label_padx,
             pady=label_pady,
-            sticky="e",
+            sticky="nsew",  # Make frame fill available space
+        )
+        stamina_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
+
+        self.status_labels["stamina"] = ctk.CTkLabel(
+            stamina_frame, text="Stamina: -", font=common_font, anchor="e"
+        )
+        self.status_labels["stamina"].grid(
+            row=0,
+            column=0,
+            padx=label_padx,
+            pady=label_pady,
+            sticky="nsew",  # Make label fill available space within frame
         )
 
         # Money (aligned right)
-        self.status_labels["money"] = ctk.CTkLabel(
-            self.status_container, text="Money: -", font=common_font, anchor="e"
+        # Money (aligned right)
+        money_frame = ctk.CTkFrame(
+            self.status_container,
+            corner_radius=self.widget_corner_radius,
+            border_width=self.border_thickness,
         )
-        self.status_labels["money"].grid(
+        money_frame.grid(
             row=0,
             column=3,
             padx=(label_padx, label_padx * 2),
             pady=label_pady,
-            sticky="e",
+            sticky="nsew",  # Make frame fill available space
+        )
+        money_frame.grid_columnconfigure(0, weight=1)  # Allow label to expand
+
+        self.status_labels["money"] = ctk.CTkLabel(
+            money_frame, text="Money: -", font=common_font, anchor="e"
+        )
+        self.status_labels["money"].grid(
+            row=0,
+            column=0,
+            padx=label_padx,
+            pady=label_pady,
+            sticky="nsew",  # Make label fill available space within frame
         )
 
     def _create_narrative_panel(self):
@@ -431,7 +398,6 @@ class GameScreen(ctk.CTk):
             player_status = self.engine.get_player_status()  # Fetch latest status
             logger.debug(f"Updating status display with: {player_status}")
 
-            # Update labels, providing default MockGameEngine or your'-' if key is missing
             if (
                 "name" in self.status_labels
                 and self.status_labels["name"].winfo_exists()
@@ -515,8 +481,8 @@ class GameScreen(ctk.CTk):
 
 
 def run_game_loop(
-    engine,
-) -> None:  # Use GameEngine
+    engine: GameEngine,
+) -> None:
     """
     Initializes and runs the game loop using the CustomTkinter GUI.
 
